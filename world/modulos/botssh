@@ -1,104 +1,142 @@
 #!/bin/bash
-#====================================================
-#	SCRIPT: BOTSSH NET WORLD
-#====================================================
 clear
-[[ $(awk -F" " '{print $2}' /usr/lib/licence) != "@JEFF_VPS" ]] && exit 0
-fun_bar() {
-    comando[0]="$1"
-    comando[1]="$2"
+#--------@DONOMODDERAJUDA-----------#
+source ShellBot.sh
+touch lista
+[[ -z $1 ]] && {
+    clear && echo "INFORME O TOKEN" && return 0
+}
+[[ ! -e RESET ]] && touch RESET
+api_bot=$1
+ShellBot.init --token "$api_bot" --monitor --flush
+ShellBot.username
+
+# - Funcao menu
+menu() {
+    local msg
+        msg="=×=×=×=×=×=×=×=×=×=×=×=×=×=\n"
+        msg+="<b>🤖 SEJA BEM VINDO(A) A ROSÁRIO NET! 🤖</b>\n"
+        msg+="=×=×=×=×=×=×=×=×=×=×=×=×=×=\n\n\n"
+        msg+="<b>DICA: PARA GERAR LOGIN DE TESTE CLIQUE NO BOTÃO (GERAR TESTE GRÁTIS)</b>\n\n\nVOCÊ PODERÁ GERAR UM LOGIN A CADA 24HRS \n"
+        msg+="=×=×=×=×=×=×=×=×=×=×=×=×=×=\n\n"
+        msg+="<b>É PROIBIDO O USO DE TORRENT, AO SER FLAGRADO USANDO TORRENT, O SEU LOGIN SERÁ CANCELADO!</b>\n"
+        msg+="=×=×=×=×=×=×=×=×=×=×=×=×=×=\n\n"
+        msg+="<b>COMPRE SEU LOGIN MENSAL POR APENAS 15$, CLIQUE NO BOTÃO (COMPRAR LOGIN MENSAL)</b>\n"
+        msg+="=×=×=×=×=×=×=×=×=×=×=×=×=×=\n\n"
+        msg+="<b>AJUDE-NOS A CONTINUAR COM ESTE PROJETO (FAZ O PIX) ❤️</b>\n"
+        msg+="=×=×=×=×=×=×=×=×=×=×=×=×=×="
+        ShellBot.sendMessage --chat_id ${message_chat_id[$id]} \
+        --text "$(echo -e $msg)" \
+        --reply_markup "$keyboard1" \
+        --parse_mode html
+        return 0
+}
+
+# - funcao criar ssh
+criarteste() {
+    [[ $(grep -wc ${callback_query_from_id} lista) != '0' ]] && {
+      ShellBot.sendMessage --chat_id ${callback_query_message_chat_id} \
+        --text "VC JA CRIOU LOGIN HOJE, VOLTE EM 24HRS !"
+      return 0
+    }
+    usuario=$(echo teste$(( RANDOM% + 9999 + 1111 )))
+    senha=$((RANDOM% + 99999))
+    limite='2'
+    dias='2'
+    tuserdate=$(date '+%C%y/%m/%d' -d " +2 days")
+    useradd -M -N -s /bin/false $usuario -e $tuserdate > /dev/null 2>&1
+    (echo "$senha";echo "$senha") | passwd $usuario > /dev/null 2>&1
+    echo "$senha" > /etc/SSHPlus/senha/$usuario
+    echo "$usuario $limite" >> /root/usuarios.db
+    echo "#!/bin/bash
+pkill -f "$usuario"
+userdel --force $usuario
+grep -v ^$usuario[[:space:]] /root/usuarios.db > /tmp/ph ; cat /tmp/ph > /root/usuarios.db
+rm /etc/SSHPlus/senha/$usuario > /dev/null 2>&1
+rm -rf /etc/SSHPlus/userteste/$usuario.sh" > /etc/SSHPlus/userteste/$usuario.sh
+    chmod +x /etc/SSHPlus/userteste/$usuario.sh
+    at -f /etc/SSHPlus/userteste/$usuario.sh now + $dias hour > /dev/null 2>&1
+    echo ${callback_query_from_id} >> lista
+    # - ENVIA O SSH
+    ShellBot.sendMessage --chat_id ${callback_query_message_chat_id} \
+    --text "$(echo -e "✅ 🤩<b>LOGIN CRIADO</b>🤩 \r\n❗<b>SALVE O SEU LOGIN</b>❗ \r\n\r\n🚻<b>USUÁRIO:</b> <code>$usuario</code>\r\n🔐<b>SENHA:</b> <code>$senha</code>\r\n❌<b>LIMITE:</b> 1\r\n<b>⏰VALIDADE:</b> $dias Dias \r\n\r\n<b>BAIXE O APLICATIVO MAIS RECENTE NO NOSSO BOT E FIQUE POR DENTRO DAS NOVIDADES</b>\r\n<b>ACESSE O NOSSO BOT</b> @ajudarosarionetbot\r\n<b>ACESSE O NOSSO GRUPO</b> @cursosshvpn")" \
+    --parse_mode html
+    return 0
+}
+
+#comprarmensal
+buylogin() {
+    ShellBot.answerCallbackQuery --callback_query_id ${callback_query_id[$id]} \
+        --text "♻️ AGUARDE..."
+    ShellBot.sendMessage --chat_id ${callback_query_message_chat_id} \
+    --text "$(echo -e "✅ 😍<b>MUITO OBRIGADO POR CONFIAR EM MEU TRABALHO</b>😍\r\n<b>FAÇA O PIX DE 15$ REAIS E ENVIE O COMPROVANTE PARA</b>👉 @jailondanet 👈\r\n<b>👇 CHAVE PIX 👇</b>\r\n<code>anjaylom@gmail.com</code> ")" \
+    --parse_mode html
+    return 0
+}
+
+#enviar app
+enviarapp() {
+    ShellBot.answerCallbackQuery --callback_query_id ${callback_query_id[$id]} \
+        --text "♻️ ENVIANDO APLICATIVO, AGUARDE..."
+    ShellBot.sendDocument --chat_id ${callback_query_message_chat_id} \
+        --document "@/root/app.apk" \
+    return 0
+}
+    
+#comprar o mod
+buymod() {
+    ShellBot.answerCallbackQuery --callback_query_id ${callback_query_id[$id]} \
+        --text "♻️ AGUARDE..."
+    ShellBot.sendMessage --chat_id ${callback_query_message_chat_id} \
+    --text "$(echo -e "✅ 😍<b>COMPRE MODS DO CONECTA4G E OUTROS POR UM PREÇO ACESSÍVEL, MODS LINDOS E LEVES</b>😍\r\n<b>CHAMA LÁ PRA NÓS TROCAR UMA IDÉIA</b>👉 @jailondanet\r\n<b>CONFIGURO SEU SERVIDOR VPS, CHAMA</b>👉 @jailondanet")" \
+    --parse_mode html
+    return 0
+}
+
+#fazer pix
+obapix() {
+    ShellBot.answerCallbackQuery --callback_query_id ${callback_query_id[$id]} \
+        --text "♻️ AGUARDE..."
+    ShellBot.sendMessage --chat_id ${callback_query_message_chat_id} \
+    --text "$(echo -e "✅ 😍<b>AGRADEÇO IMENSAMENTE PELO SEU GRANDE FEITO,</b>😍\r\n<b>MUITO OBRIGADO POR CONFIAR EM MEU TRABALHO</b>😍\r\n<b>👇 CHAVE PIX 👇</b>\r\n<code>anjaylom@gmail.com</code> ")" \
+    --parse_mode html
+    return 0
+}
+
+#informacoes usuario
+infouser () {
+	ShellBot.sendMessage --chat_id ${message_chat_id[$id]} \
+	--text "$(echo -e "Nome:  ${message_from_first_name[$(ShellBot.ListUpdates)]}\nUser: @${message_from_username[$(ShellBot.ListUpdates)]:-null}")\nID: ${message_from_id[$(ShellBot.ListUpdates)]} " \
+	--parse_mode html
+	return 0
+}
+
+unset botao1
+botao1=''
+ShellBot.InlineKeyboardButton --button 'botao1' --line 1 --text '♻️ GERAR TESTE GRÁTIS♻️' --callback_data 'gerarssh'
+ShellBot.InlineKeyboardButton --button 'botao1' --line 3 --text '❤️️ COMPRAR LOGIN MENSAL ❤️️' --callback_data 'buymensal'
+ShellBot.InlineKeyboardButton --button 'botao1' --line 5 --text '🔰 BAIXAR APLICATIVO 🔰' --callback_data 'appenviar'
+ShellBot.InlineKeyboardButton --button 'botao1' --line 7 --text '💵 COMPRAR MOD CONECTA4G ou OUTROS 💵' --callback_data 'comprarmod'
+ShellBot.InlineKeyboardButton --button 'botao1' --line 9 --text '🤞 APOIAR PROJETO 🙏️' --callback_data 'fazerpix'
+ShellBot.regHandleFunction --function criarteste --callback_data gerarssh
+ShellBot.regHandleFunction --function buylogin --callback_data buymensal
+ShellBot.regHandleFunction --function enviarapp --callback_data appenviar
+ShellBot.regHandleFunction --function buymod --callback_data comprarmod
+ShellBot.regHandleFunction --function obapix --callback_data fazerpix
+unset keyboard1
+keyboard1="$(ShellBot.InlineKeyboardMarkup -b 'botao1')"
+while :; do
+   [[ "$(date +%d)" != "$(cat RESET)" ]] && {
+   	echo $(date +%d) > RESET
+   	echo ' ' > lista
+   }
+  ShellBot.getUpdates --limit 100 --offset $(ShellBot.OffsetNext) --timeout 24
+  for id in $(ShellBot.ListUpdates); do
     (
-        [[ -e $HOME/fim ]] && rm $HOME/fim
-        ${comando[0]} -y >/dev/null 2>&1
-        ${comando[1]} -y >/dev/null 2>&1
-        touch $HOME/fim
-    ) >/dev/null 2>&1 &
-    tput civis
-    echo -ne "\033[1;33m["
-    while true; do
-        for ((i = 0; i < 18; i++)); do
-            echo -ne "\033[1;31m#"
-            sleep 0.1s
-        done
-        [[ -e $HOME/fim ]] && rm $HOME/fim && break
-        echo -e "\033[1;33m]"
-        sleep 1s
-        tput cuu1
-        tput dl1
-        echo -ne "\033[1;33m["
-    done
-    echo -e "\033[1;33m]\033[1;37m -\033[1;32m OK !\033[1;37m"
-    tput cnorm
-}
-
-fun_botOnOff() {
-    [[ $(ps x | grep "bot_plus" | grep -v grep | wc -l) = '0' ]] && {
-        clear
-        echo -e "\E[44;1;37m             INSTALADOR BOT NET WORLD SSH               \E[0m\n"
-        echo -ne "\033[1;32mINFORME SEU TOKEN:\033[1;37m "
-        read tokenbot
-        echo ""
-        echo -ne "\033[1;32mINFORME SEU ID:\033[1;37m "
-        read iduser
-        clear
-        echo -e "\033[1;32mINICIANDO BOT NET WORLD SSH \033[0m\n"
-        fun_bot1() {
-            [[ ! -e "/etc/SSHPlus/ShellBot.sh" ]] && {
-				wget -qO- https://raw.githubusercontent.com/jailondanet2/copiador/main/world/instalador/ShellBot.sh >/etc/SSHPlus/ShellBot.sh
-			}
-            cd /etc/SSHPlus
-            screen -dmS bot_plus ./bot $tokenbot $iduser >/dev/null 2>&1
-            [[ $(grep -wc "bot_plus" /etc/autostart) = '0' ]] && {
-                echo -e "ps x | grep 'bot_plus' | grep -v 'grep' || cd /etc/SSHPlus && screen -dmS bot_plus ./bot $tokenbot $iduser && cd $HOME" >>/etc/autostart
-            } || {
-                sed -i '/bot_plus/d' /etc/autostart
-                echo -e "ps x | grep 'bot_plus' | grep -v 'grep' || cd /etc/SSHPlus && screen -dmS bot_plus ./bot $tokenbot $iduser && cd $HOME" >>/etc/autostart
-            }
-            [[ $(crontab -l | grep -c "verifbot") = '0' ]] && (
-                crontab -l 2>/dev/null
-                echo "@daily /bin/verifbot"
-            ) | crontab -
-            cd $HOME
-        }
-        fun_bar 'fun_bot1'
-        [[ $(ps x | grep "bot_plus" | grep -v grep | wc -l) != '0' ]] && echo -e "\n\033[1;32m BOT NET WORLD SSH ATIVADO !\033[0m" || echo -e "\n\033[1;31m ERRO! REANALISE SUAS INFORMACOES\033[0m"
-        sleep 2
-        menu
-    } || {
-        clear
-        echo -e "\033[1;32mPARANDO BOT NET WORLD SSH... \033[0m\n"
-        fun_bot2() {
-            screen -r -S "bot_plus" -X quit
-            screen -wipe 1>/dev/null 2>/dev/null
-            [[ $(grep -wc "bot_plus" /etc/autostart) != '0' ]] && {
-                sed -i '/bot_plus/d' /etc/autostart
-            }
-            [[ $(crontab -l | grep -c "verifbot") != '0' ]] && crontab -l | grep -v 'verifbot' | crontab -
-            sleep 1
-        }
-        fun_bar 'fun_bot2'
-        echo -e "\n\033[1;32m \033[1;31mBOT NET WORLD SSH PARADO! \033[0m"
-        sleep 2
-        menu
-    }
-}
-
-fun_instbot() {
-    echo -e "\E[44;1;37m             INSTALADOR BOT NET WORLD SSH                \E[0m\n"
-    echo -e "                 \033[1;33m[\033[1;31m!\033[1;33m] \033[1;31mATENCAO \033[1;33m[\033[1;31m!\033[1;33m]\033[0m"
-    echo -e "\n\033[1;32m1° \033[1;37m- \033[1;33mPELO SEU TELEGRAM ACESSE OS SEGUINTES BOT\033[1;37m:\033[0m"
-    echo -e "\n\033[1;32m2° \033[1;37m- \033[1;33mBOT \033[1;37m@BotFather \033[1;33mCRIE O SEU BOT \033[1;31mOPCAO: \033[1;37m/newbot\033[0m"
-    echo -e "\n\033[1;32m3° \033[1;37m- \033[1;33mBOT \033[1;37m@userinfobot \033[1;33mE PEGUE SEU ID \033[1;31mOPCAO: \033[1;37m/id\033[0m"
-    echo -e "\033[0;34m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[1;32m"
-    echo ""
-    read -p "DESEJA CONTINUAR ? [s/n]: " -e -i s resposta
-    [[ "$resposta" = 's' ]] && {
-        fun_botOnOff
-    } || {
-        echo -e "\n\033[1;31mRetornando...\033[0m"
-        sleep 2
-        menu
-    }
-}
-[[ -f "/etc/SSHPlus/ShellBot.sh" ]] && fun_botOnOff || fun_instbot
-#fim
+      ShellBot.watchHandle --callback_data ${callback_query_data[$id]}
+      comando=(${message_text[$id]})
+      [[ "${comando[0]}" = "/menu"  || "${comando[0]}" = "/start" ]] && menu
+      [[ "${comando[0]}" = "/id"  ]] && infouser
+    ) &
+  done
+done
